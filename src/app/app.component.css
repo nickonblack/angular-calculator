@@ -1,0 +1,29 @@
+.outerContainer {
+  padding: 5px;
+  box-sizing: content-box;
+  max-width: 750px;
+  min-width: 300px;
+  justify-content:center;
+}
+  
+div.container {
+  justify-content:center;
+}
+  
+div.container > div {
+  height: 50px;
+  width: 50px;
+  background-color: rgb(97, 96, 90);
+}
+
+input[type=text] {
+  width: 100%;
+  padding: 15px 17px;
+  margin: 8px 5px;
+  box-sizing: border-box;
+  border: 2px solid rgb(156, 156, 156);
+  border-radius: 8px;
+  max-width: 750px;
+  min-width: 300px;
+  font-size: 24px;
+}
