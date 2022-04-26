@@ -113,11 +113,26 @@ class Expression {
 
         var countDots = 0;
 
-        var numSize: number = 0;
-        if (remainingStr.length > 0 && (this.isNumber(remainingStr[numSize]) ||  remainingStr[numSize] == '.')) {
-            if (remainingStr[numSize] == ".") 
-                ++countDots;
+        var countUnaryOp = 0;
 
+        // включает в себя специальные символы
+        let includeSpecialSigns = function (letter: string) {  
+            return (letter == Operation.addition) || (letter == Operation.subtraction);
+        };
+
+        var numSize: number = 0;
+        if (remainingStr.length > 0) {
+            if (this.isNumber(remainingStr[numSize]) ||  (remainingStr[numSize] == '.')) {
+                // если начинается с числа или точки    
+                if (remainingStr[numSize] == ".") 
+                ++countDots;
+            } else if (includeSpecialSigns(remainingStr[numSize]) && remainingStr.length > 1 && this.isNumber(remainingStr[1])) {
+                numSize = 1;
+                // если начинается с + или - и далее идет число
+            } else {
+                return null;
+            }
+            
             while (numSize < remainingStr.length && (this.isNumber(remainingStr[numSize]) ||  remainingStr[numSize] == '.') && (countDots < 2)) {
                 ++numSize;
                 if (remainingStr[numSize] == ".") 
@@ -129,6 +144,21 @@ class Expression {
             model.value = remainingStr.substring(numSize);
             return result;
         }
+
+        // if (remainingStr.length > 0 && (this.isNumber(remainingStr[numSize]) ||  remainingStr[numSize] == '.')) {
+            
+
+        //     while (numSize < remainingStr.length && (this.isNumber(remainingStr[numSize]) ||  remainingStr[numSize] == '.') && (countDots < 2)) {
+        //         ++numSize;
+        //         if (remainingStr[numSize] == ".") 
+        //         ++countDots;
+        //     }
+
+        //     // одинаково называны функции
+        //     result = parseFloat(remainingStr.substring(0,numSize));
+        //     model.value = remainingStr.substring(numSize);
+        //     return result;
+        // }
         return null;
     }
 
