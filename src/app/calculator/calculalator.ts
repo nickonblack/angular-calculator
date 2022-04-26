@@ -37,15 +37,14 @@ export class Calculator {
                 break;
             case Actions.compute:
                 console.log("Start Computing");
-                
+
                 try{
                     let expr = new Expression();
                     expr.createExpression(this.result);
                     let result = expr.calculateExpression();
-                    console.log(result);
+                    const resultStr = `${result}`.replace(/\./g,',');;
 
-                    // console.log(this.calculate(this.result));
-                    this.result = `${result}`;
+                    this.result = resultStr;
                 } catch (e) {
                     this.result = ResultType.error;
                 }
@@ -63,16 +62,6 @@ export class Calculator {
     
     calculate(fn:string) {
         return new Function('return ' + fn)();
-    } 
-
-    private toNumber(value: string): number | null {
-      let resStr = this.replaceAllMathSigns(value);
-      console.log(resStr);
-      return 1;
-    }
-
-    private replaceAllMathSigns(value: string): string {
-        return value.replace(SpecialSign.pi, Math.PI.toString()).replace(SpecialSign.e, Math.E.toString());
     }
 }
 
@@ -122,12 +111,20 @@ class Expression {
         var remainingStr = this.skipSpaces(model.value);
         var result: number;
 
+        var countDots = 0;
+
         var numSize: number = 0;
-        if (remainingStr.length > 0 && this.isNumber(remainingStr[0])) {
-            while (numSize < remainingStr.length && this.isNumber(remainingStr[numSize])) {
+        if (remainingStr.length > 0 && (this.isNumber(remainingStr[numSize]) ||  remainingStr[numSize] == '.')) {
+            if (remainingStr[numSize] == ".") 
+                ++countDots;
+
+            while (numSize < remainingStr.length && (this.isNumber(remainingStr[numSize]) ||  remainingStr[numSize] == '.') && (countDots < 2)) {
                 ++numSize;
+                if (remainingStr[numSize] == ".") 
+                ++countDots;
             }
-            
+
+            // одинаково называны функции
             result = parseFloat(remainingStr.substring(0,numSize));
             model.value = remainingStr.substring(numSize);
             return result;
@@ -287,7 +284,9 @@ class Expression {
     }
 
     createExpression = (inString: string) => {
-        let calcExpression = new RavCalcExp(inString);
+        let modifiedStr = this.replaceAllMathSigns(inString.replace(/,/g, '.'));
+        
+        let calcExpression = new RavCalcExp(modifiedStr);
 
         let ext = this.parseAddSub(calcExpression);
         this.op = ext.op;
@@ -295,6 +294,10 @@ class Expression {
         this.right = ext.right
         this.value = ext.value;
         return;
+    }
+
+    private replaceAllMathSigns(value: string): string {
+        return value.replace(new RegExp(SpecialSign.pi), Math.PI.toString()).replace(new RegExp(SpecialSign.e), Math.E.toString());
     }
 }
 
