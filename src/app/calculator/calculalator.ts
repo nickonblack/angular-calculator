@@ -102,12 +102,14 @@ class Expression {
         return inString.replace(/ /g, '.');
     }
 
+    // проверка является ли числом
     private isNumber(value: string | number): boolean {
         return ((value != null) && ((value != undefined)) && (value !== '') &&
            !isNaN(Number(value.toString())));
     }
 
-    parseFloat = (model: RavCalcExp): number | null => {
+    // парсинг числа 
+    private parseFloat = (model: RavCalcExp): number | null => {
         var remainingStr = this.skipSpaces(model.value);
         var result: number;
 
@@ -144,26 +146,12 @@ class Expression {
             model.value = remainingStr.substring(numSize);
             return result;
         }
-
-        // if (remainingStr.length > 0 && (this.isNumber(remainingStr[numSize]) ||  remainingStr[numSize] == '.')) {
-            
-
-        //     while (numSize < remainingStr.length && (this.isNumber(remainingStr[numSize]) ||  remainingStr[numSize] == '.') && (countDots < 2)) {
-        //         ++numSize;
-        //         if (remainingStr[numSize] == ".") 
-        //         ++countDots;
-        //     }
-
-        //     // одинаково называны функции
-        //     result = parseFloat(remainingStr.substring(0,numSize));
-        //     model.value = remainingStr.substring(numSize);
-        //     return result;
-        // }
+        
         return null;
     }
 
     // парсинг оператора
-    parseOperator = (model: RavCalcExp): Operation | null => {
+    private parseOperator = (model: RavCalcExp): Operation | null => {
         var remainingStr = this.skipSpaces(model.value);
         var op: Operation | null = null;
         var numSize: number = 0;
@@ -193,7 +181,7 @@ class Expression {
     }
 
     // парсинг сложения-вычитания
-    parseAddSub = (model: RavCalcExp): Expression => {
+    private parseAddSub = (model: RavCalcExp): Expression => {
         var left = this.parseMulDiv(model); 
 
         while (true) {
@@ -210,7 +198,6 @@ class Expression {
             try {
                 right = this.parseMulDiv(model);
             } catch (e) {
-                this.disposeExpression(left);
                 throw e;
             }
 
@@ -221,8 +208,6 @@ class Expression {
                 expr.op = op;
                 left = expr;
             } catch (e) {
-                this.disposeExpression(left);
-                this.disposeExpression(right);
                 throw e;
             }
         }
@@ -231,7 +216,7 @@ class Expression {
     }
 
     // парсинг умножения-деления
-    parseMulDiv =  (model: RavCalcExp): Expression => {
+    private parseMulDiv =  (model: RavCalcExp): Expression => {
         var left = this.parseAtom(model);
 
         while (true) {
@@ -247,7 +232,6 @@ class Expression {
             try {
                 right = this.parseAtom(model);
             } catch (e) {
-                this.disposeExpression(left);
                 throw e;
             }
 
@@ -258,8 +242,6 @@ class Expression {
                 expr.op = op;
                 left = expr;
             } catch (e) {
-                this.disposeExpression(left);
-                this.disposeExpression(right);
                 throw e;
             }
             
@@ -269,8 +251,17 @@ class Expression {
     }
 
     // парсинг числа
-    parseAtom = (model:RavCalcExp): Expression => {
+    private parseAtom = (model:RavCalcExp): Expression => {
         let expr: Expression = new Expression();
+
+        // // Если находим левую скобку
+        // if (model.value[0] == Operation.leftBrace) {
+        //     // скобку и запускаем заново вычисление
+        //     model.value = model.value.substring(1);
+        //     parseAddSub    
+
+        // }
+
         let newNumber = this.parseFloat(model);
 
         if (newNumber == null) {
@@ -278,11 +269,6 @@ class Expression {
         }
         expr.value = newNumber;
         return expr;
-    }
-
-
-    disposeExpression = (model: Expression) => {
-        //this.result = ResultType.default;
     }
 
     // вычисление выражения 
@@ -315,7 +301,13 @@ class Expression {
 
     createExpression = (inString: string) => {
         let modifiedStr = this.replaceAllMathSigns(inString.replace(/,/g, '.'));
-        
+        const leftBracketsCount =  (modifiedStr.match(/\(/g) || []).length;
+        const rightBracketsCount =  (modifiedStr.match(/\)/g) || []).length;
+
+        // базовая проверка, количество закрывающихся скобок должно быть равно открывающимся
+        if (leftBracketsCount != rightBracketsCount)
+            throw new Error();
+
         let calcExpression = new RavCalcExp(modifiedStr);
 
         let ext = this.parseAddSub(calcExpression);
@@ -331,9 +323,9 @@ class Expression {
     }
 }
 
-
+// TODO: -вынести или перенести
 export class RavCalcExp{
-    value: string = "0"
+    value: string;
 
     constructor(expr: string) {
         this.value = expr;
