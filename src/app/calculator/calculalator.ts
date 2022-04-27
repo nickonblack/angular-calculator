@@ -115,8 +115,6 @@ class Expression {
 
         var countDots = 0;
 
-        var countUnaryOp = 0;
-
         // включает в себя специальные символы
         let includeSpecialSigns = function (letter: string) {  
             return (letter == Operation.addition) || (letter == Operation.subtraction);
@@ -254,21 +252,35 @@ class Expression {
     private parseAtom = (model:RavCalcExp): Expression => {
         let expr: Expression = new Expression();
 
-        // // Если находим левую скобку
-        // if (model.value[0] == Operation.leftBrace) {
-        //     // скобку и запускаем заново вычисление
-        //     model.value = model.value.substring(1);
-        //     parseAddSub    
+        // Если находим левую скобку запускаем заново вычисление выражения
+        if (model.value[0] == Operation.leftBrace) {
+            // скобку и запускаем заново вычисление
+            model.value = model.value.substring(1);
+            let subExpr =  this.parseAddSub(model);
 
-        // }
+            if (model.value.length == 0) {
+                //неожиданный конец выражения
+                throw new Error();
+            }
 
-        let newNumber = this.parseFloat(model);
+            // если находим правую скобку, то возвращаем результат
+            if (model.value[0] == Operation.rightBrace){
+                model.value = model.value.substring(1);
+                return subExpr;
+            } else {
+                //нет закрывающей скобки 
+                throw new Error();
+            }
 
-        if (newNumber == null) {
-            throw new Error();
+        } else {
+            let newNumber = this.parseFloat(model);
+
+            if (newNumber == null) {
+                throw new Error();
+            }
+            expr.value = newNumber;
+            return expr;
         }
-        expr.value = newNumber;
-        return expr;
     }
 
     // вычисление выражения 
