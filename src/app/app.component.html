@@ -1,8 +1,10 @@
- <input type="text" [ngModel]="calculator.result" (ngModelChange)="valuechange($event)" >
- 
+<div class="outerContainer">
+    <input type="text" [ngModel]="calculator.result" (ngModelChange)="valuechange($event)">
+</div>
+
 <ng-container *ngFor="let buttonArr of calculatorButtons">
     <div class="outerContainer">
-        <div fxLayout="row" fxLayoutGap="10px" class="container">
+        <div fxLayout="row" fxLayoutGap="10px" fxLayoutAlign="center center" class="container">
         <ng-container  *ngFor="let button of buttonArr; let i = index">
             <item-button-comp sign={{button.sign}} fxFlex={{button.flexConstraint}} (onChanged)="valuechange($event)"></item-button-comp> 
          </ng-container>
