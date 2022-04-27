@@ -1,3 +1,4 @@
+// Контейнер с данными 
 export class ButtonData {
     sign: string;
     flexConstraint: string;

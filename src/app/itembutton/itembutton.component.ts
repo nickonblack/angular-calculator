@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-      
+ 
+// angular компонент кнопки 
 @Component({
     selector: 'item-button-comp',
     styleUrls: ['./itembutton.component.css'],
@@ -7,13 +8,15 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 })
 export class ItemButtonComponent {
     
+    // обработчик события нажатия на кнопку
     @Output() onChanged = new EventEmitter<string>();
 
+    // знак кнопки
     @Input() sign: string = "";
 
-    // функция = выполнения 
-    change(increased:any) {
-        console.log(increased);
-        this.onChanged.emit(increased);
+    // событие при нажатии на кнопку
+    change(data:any) {
+        console.log(data);
+        this.onChanged.emit(data);
     }
 }
