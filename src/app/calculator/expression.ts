@@ -1,5 +1,6 @@
 import { SpecialSign } from "app/models/special_sign";
 import { Operation } from "app/models/operation";
+import { isIn } from "app/utils/help_funcs";
 
 declare namespace Expression {
     type RavCalcExp = typeof Expression.RavCalcExp.prototype
@@ -34,14 +35,13 @@ export class Expression {
 
     // парсинг числа   
     private parseFloat = (model: Expression.RavCalcExp): number | null => {
-        let remainingStr = this.skipSpaces(model.value);
-        let result: number;
+        const remainingStr = this.skipSpaces(model.value);
 
         let countDots = 0;
 
         // включает в себя специальные символы
-        let includeSpecialSigns = function (letter: string) {  
-            return (letter == Operation.addition) || (letter == Operation.subtraction);
+        const includeSpecialSigns = function (constter: string) {  
+            return (constter == Operation.addition) || (constter == Operation.subtraction);
         };
 
         let numSize: number = 0;
@@ -63,10 +63,8 @@ export class Expression {
                 ++countDots;
             }
 
-            // одинаково называны функции
-            result = parseFloat(remainingStr.substring(0,numSize));
             model.value = remainingStr.substring(numSize);
-            return result;
+            return parseFloat(remainingStr.substring(0,numSize));
         }
         
         return null;
@@ -74,16 +72,17 @@ export class Expression {
 
     // парсинг оператора
     private parseOperator = (model: Expression.RavCalcExp): Operation | null => {
-        let remainingStr = this.skipSpaces(model.value);
+        const remainingStr = this.skipSpaces(model.value);
         let op: Operation | null = null;
 
-        if (remainingStr.length == 0) {
+        if (remainingStr.length === 0) {
             return op;
         } 
 
         switch (remainingStr[0]) {
             case Operation.addition:
-                op = Operation.addition; break;
+                op = Operation.addition; 
+                break;
             case Operation.division:
                 op = Operation.division; break;
             case Operation.multiplication:
@@ -107,7 +106,7 @@ export class Expression {
 
         while (true) {
             let op: Operation | null = Operation.notAnOperation;
-            let remainStr = new Expression.RavCalcExp(model.value);
+            const remainStr = new Expression.RavCalcExp(model.value);
             op = this.parseOperator(remainStr);
             if ((op == null) || (op != Operation.addition && op != Operation.subtraction)) {
                 return left;
@@ -123,7 +122,7 @@ export class Expression {
             }
 
             try {
-                let expr = new Expression();
+                const expr = new Expression();
                 expr.left = left;
                 expr.right = right
                 expr.op = op;
@@ -142,7 +141,7 @@ export class Expression {
 
         while (true) {
             let op: Operation | null = Operation.notAnOperation;
-            let remainStr = new Expression.RavCalcExp(model.value);
+            const remainStr = new Expression.RavCalcExp(model.value);
             op = this.parseOperator(remainStr);
             if ((op == null) || (op != Operation.division && op != Operation.multiplication)) {
                 return left;
@@ -157,7 +156,7 @@ export class Expression {
             }
 
             try {
-                let expr = new Expression();
+                const expr = new Expression();
                 expr.left = left;
                 expr.right = right
                 expr.op = op;
@@ -173,13 +172,13 @@ export class Expression {
 
     // парсинг числа
     private parseAtom = (model: Expression.RavCalcExp): Expression => {
-        let expr: Expression = new Expression();
+        const expr: Expression = new Expression();
 
         // Если находим левую скобку запускаем заново вычисление выражения
         if (model.value[0] == Operation.leftBrace) {
             // скобку и запускаем заново вычисление
             model.value = model.value.substring(1);
-            let subExpr =  this.parseAddSub(model);
+            const subExpr =  this.parseAddSub(model);
 
             if (model.value.length == 0) {
                 //неожиданный конец выражения
@@ -196,7 +195,7 @@ export class Expression {
             }
 
         } else {
-            let newNumber = this.parseFloat(model);
+            const newNumber = this.parseFloat(model);
 
             if (newNumber == null) {
                 throw new Error();
@@ -214,8 +213,8 @@ export class Expression {
 
         // assert(this.left);
         // assert(this.right);
-        let leftValue = this.left?.calculateExpression();
-        let rightValue = this.right?.calculateExpression();
+        const leftValue = this.left?.calculateExpression();
+        const rightValue = this.right?.calculateExpression();
         
         switch (this.op) {
             case Operation.addition:
@@ -236,6 +235,7 @@ export class Expression {
 
     createExpression = (inString: string) => {
         let modifiedStr = this.replaceAllMathSigns(inString.replace(/,/g, '.'));
+        modifiedStr = this.fillAllMultSigns(modifiedStr);
         const leftBracketsCount =  (modifiedStr.match(/\(/g) || []).length;
         const rightBracketsCount =  (modifiedStr.match(/\)/g) || []).length;
 
@@ -243,9 +243,9 @@ export class Expression {
         if (leftBracketsCount != rightBracketsCount)
             throw new Error();
 
-        let calcExpression = new Expression.RavCalcExp(modifiedStr);
+        const calcExpression = new Expression.RavCalcExp(modifiedStr);
 
-        let ext = this.parseAddSub(calcExpression);
+        const ext = this.parseAddSub(calcExpression);
         this.op = ext.op;
         this.left = ext.left
         this.right = ext.right
@@ -254,7 +254,77 @@ export class Expression {
     }
 
     private replaceAllMathSigns = (value: string): string => {
-        return value.replace(new RegExp(SpecialSign.pi), Math.PI.toString()).replace(new RegExp(SpecialSign.e), Math.E.toString());
+        let resultStr = value;
+
+        let specialSignIndex = resultStr.indexOf(SpecialSign.pi);
+        while (specialSignIndex != -1) {
+            const leftToSpecialSignIndex = specialSignIndex - 1;
+            let rightToSpecialSignIndex = specialSignIndex + 1;
+            if (isIn(leftToSpecialSignIndex, resultStr) && Operation.parse(resultStr[leftToSpecialSignIndex]) == Operation.notAnOperation) {
+                resultStr = resultStr.substring(0, specialSignIndex) + Operation.multiplication + resultStr.substring(specialSignIndex);
+                rightToSpecialSignIndex+=1;
+            }
+
+            if (isIn(rightToSpecialSignIndex, resultStr) && Operation.parse(resultStr[rightToSpecialSignIndex]) == Operation.notAnOperation) {
+                resultStr = resultStr.substring(0, rightToSpecialSignIndex) + Operation.multiplication + resultStr.substring(rightToSpecialSignIndex);
+            }
+
+            resultStr = resultStr.replace(SpecialSign.pi,Math.PI.toString());
+            specialSignIndex = resultStr.indexOf(SpecialSign.pi);
+        }
+
+        specialSignIndex = resultStr.indexOf(SpecialSign.e);
+        while (specialSignIndex != -1) {
+            const leftToSpecialSignIndex = specialSignIndex - 1;
+            let rightToSpecialSignIndex = specialSignIndex + 1;
+            if (isIn(leftToSpecialSignIndex, resultStr) && Operation.parse(resultStr[leftToSpecialSignIndex]) == Operation.notAnOperation) {
+                resultStr = resultStr.substring(0, specialSignIndex) + Operation.multiplication + resultStr.substring(specialSignIndex);
+                rightToSpecialSignIndex+=1;
+            }
+
+            if (isIn(rightToSpecialSignIndex, resultStr) && Operation.parse(resultStr[rightToSpecialSignIndex]) == Operation.notAnOperation) {
+                resultStr = resultStr.substring(0, rightToSpecialSignIndex) + Operation.multiplication + resultStr.substring(rightToSpecialSignIndex);
+            }
+
+            resultStr = resultStr.replace(SpecialSign.e,Math.E.toString());
+            specialSignIndex = resultStr.indexOf(SpecialSign.e);
+        }
+
+        return resultStr;
+    }
+
+    //Проставляем все знаки умножения( в основном до и после скобок)
+    private fillAllMultSigns = (value: string): string => {
+        let resultStr = value;
+
+        // ищем все левые скобки
+        let count = [...resultStr.matchAll(/\(/g)].map(a => a.index).length
+
+        for (let i = 0; i < count ; ++i) {
+            let specialSignIndex = [...resultStr.matchAll(/\(/g)].map(a => a.index)[i] ?? 0;
+            let leftToSpecialSignIndex = specialSignIndex -1;
+            if (isIn(leftToSpecialSignIndex, resultStr)) {
+                const op =  Operation.parse(resultStr[leftToSpecialSignIndex]);
+                if (op == Operation.notAnOperation || op == Operation.rightBrace) {
+                    resultStr = resultStr.substring(0, specialSignIndex) + Operation.multiplication + resultStr.substring(specialSignIndex);
+                }
+            }
+        }
+
+        // ищем все правые скобки
+        count = [...resultStr.matchAll(/\)/g)].map(a => a.index).length
+
+        for (let i = 0; i < count ; ++i) {
+            let specialSignIndex = [...resultStr.matchAll(/\)/g)].map(a => a.index)[i] ?? 0;
+            let rightToSpecialSignIndex = specialSignIndex + 1;
+            if (isIn(rightToSpecialSignIndex, resultStr)) {
+                const op =  Operation.parse(resultStr[rightToSpecialSignIndex]);
+                if (op == Operation.notAnOperation || op == Operation.leftBrace) {
+                    resultStr = resultStr.substring(0, specialSignIndex) + Operation.multiplication + resultStr.substring(specialSignIndex);
+                }
+            }
+        }
+
+        return resultStr;
     }
 }
-

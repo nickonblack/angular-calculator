@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 // angular компонент кнопки 
 @Component({
     selector: 'item-button-comp',
-    styleUrls: ['./itembutton.component.css'],
+    styleUrls: ['./itembutton.component.scss'],
     templateUrl: './itembutton.component.html',
 })
 export class ItemButtonComponent {
