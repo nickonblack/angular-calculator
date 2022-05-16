@@ -1,5 +1,5 @@
 <div class="outerContainer">
-    <input type="text" [ngModel]="calculator.result" (ngModelChange)="valuechange($event)">
+    <input inputDirective [calculator]="calculator" type="text" [(ngModel)]="calculator.result" (keydown)="keyDown($event)" (keyup)="keyUp($event)" (keypress)="keyPress($event)" (onreset)="onReset()" (ngModelChange)="onChange($event)">
 </div>
 
 <ng-container *ngFor="let buttonArr of calculatorButtons">

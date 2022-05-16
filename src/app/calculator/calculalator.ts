@@ -5,11 +5,14 @@ import { Expression } from "app/calculator/expression"
 export class Calculator {
 
     result: string = ResultType.empty;
+    // предыдущее значение текстового поля. Для анализа и сравнения
+    prevResult: string = ResultType.empty;
 
     compute(action:string) {
         switch (action) {
             case Action.clear:
                 this.result = ResultType.empty;
+                this.prevResult = this.result;
                 break;
             case Action.fraction:
                 // если в конце строки есть запятая, то не добавляем ее 
@@ -30,6 +33,7 @@ export class Calculator {
                 }
                 
                 this.result += action;
+                this.prevResult = this.result;
                 break;
             case Action.compute:
                 console.log("Start Computing");
@@ -40,15 +44,19 @@ export class Calculator {
                     const calculationResult = expr.calculateExpression();
                     const resultStr = `${calculationResult}`.replace(/\./g,',');;
                     this.result = resultStr;
+                    this.prevResult = this.result;
                 } catch (e) {
                     this.result = ResultType.error;
+                    this.prevResult = this.result; 
                 }
                 break;
             default:
                 if ((<any>Object).values(ResultType).includes(this.result)) {
                     this.result = action;
+                    this.prevResult = this.result; 
                 } else {
                     this.result += action;
+                    this.prevResult = this.result; 
                 }
                 break;
         }

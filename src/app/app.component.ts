@@ -4,6 +4,7 @@ import { Calculator} from 'app/calculator/calculalator';
 import { SpecialSign } from 'app/models/special_sign';
 import { Operation } from 'app/models/operation';
 import { Action } from 'app/models/action';
+import { AnyCatcher } from 'rxjs/internal/AnyCatcher';
 
 @Component({
   selector: 'app-root',
@@ -25,5 +26,31 @@ export class AppComponent {
       //TODO: - решить проблему с вводом с клавиатуры
       //При использовании клавиатуры newValue = всей строке 
       this.calculator.compute(newValue);
+  }
+
+  keyDown(event: KeyboardEvent) {
+    console.log(`keyDownEvent:${event.key}`)
+  }
+
+  keyPress(event: KeyboardEvent) {
+    console.log(`keyPressEvent:${event.key}`)
+  }
+
+  keyUp(event: KeyboardEvent) {
+    console.log(`keyPressUp:${event.key}`)
+    // const pattern = /[0-9\(\)\*\/\+\-\,]/g;
+    // const inputChar = event.key;
+    // const validCharacters = `${inputChar.match(pattern) ?? ""}`;
+    // this.valuechange(validCharacters);
+  }
+
+  onReset() {
+    console.log(`onReset`)
+  }
+
+  onChange(newObj: any) {
+    console.log(`onChange:${newObj}`);
+
+    // this.calculator.result = "55";
   }
 }
