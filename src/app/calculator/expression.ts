@@ -13,6 +13,12 @@ export class Expression {
     left: Expression | undefined
     right: Expression | undefined
 
+    constructor(exprStr?: string) {
+        if (exprStr!= null) {
+            this.createExpression(exprStr);
+        }
+    }
+
     //Обертка вокруг стринги(для мутабельности при передачи в функцию)
     //TODO:- стоит вынести в отдельное поле класса Expression
     static RavCalcExp = class {
@@ -207,6 +213,7 @@ export class Expression {
 
     // вычисление выражения 
     calculateExpression = (): number => {
+
         if (this.op == Operation.notAnOperation) {
             return this.value;
         }
@@ -233,8 +240,9 @@ export class Expression {
         return this.value;
     }
 
-    createExpression = (inString: string) => {
+    private createExpression = (inString: string) => {
         let modifiedStr = this.replaceAllMathSigns(inString.replace(/,/g, '.'));
+        modifiedStr = this.replaceAllOperations(modifiedStr);
         modifiedStr = this.fillAllMultSigns(modifiedStr);
         const leftBracketsCount =  (modifiedStr.match(/\(/g) || []).length;
         const rightBracketsCount =  (modifiedStr.match(/\)/g) || []).length;
@@ -293,6 +301,13 @@ export class Expression {
         return resultStr;
     }
 
+    private replaceAllOperations = (value: string): string => {
+        let resultStr = value;
+        resultStr = resultStr.replace(/\*/g, Operation.multiplication);
+        resultStr = resultStr.replace(/\//g, Operation.division);
+        return resultStr;
+    }
+
     //Проставляем все знаки умножения( в основном до и после скобок)
     private fillAllMultSigns = (value: string): string => {
         let resultStr = value;
@@ -320,7 +335,7 @@ export class Expression {
             if (isIn(rightToSpecialSignIndex, resultStr)) {
                 const op =  Operation.parse(resultStr[rightToSpecialSignIndex]);
                 if (op == Operation.notAnOperation || op == Operation.leftBrace) {
-                    resultStr = resultStr.substring(0, specialSignIndex) + Operation.multiplication + resultStr.substring(specialSignIndex);
+                    resultStr = resultStr.substring(0, rightToSpecialSignIndex) + Operation.multiplication + resultStr.substring(rightToSpecialSignIndex);
                 }
             }
         }

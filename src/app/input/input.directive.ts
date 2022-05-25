@@ -23,7 +23,7 @@ export class InputDirective{
             val = this.element.nativeElement.value as string;
         }
         
-        const filterPattern = /[0-9\(\)\*\/\+\-\,\.\p\e]/g;
+        const filterPattern = /[0-9\(\)\*\/\+\-\,\.\p\e\x\÷]/g;
         
         let validCharacters = val.match(filterPattern)?.join("") ?? "";
         if (validCharacters == "") {
@@ -31,7 +31,10 @@ export class InputDirective{
         }
 
         validCharacters = validCharacters.replace(/\./g, ',');
-        
+
+        validCharacters = validCharacters.replace(/\*/g, Operation.multiplication);
+        validCharacters = validCharacters.replace(/\//g, Operation.division);
+
         this.element.nativeElement.value = validCharacters;
         if (this.calculator != null)
             this.calculator.prevResult = validCharacters;

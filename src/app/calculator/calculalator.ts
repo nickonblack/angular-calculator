@@ -39,8 +39,7 @@ export class Calculator {
                 console.log("Start Computing");
 
                 try{
-                    const expr = new Expression();
-                    expr.createExpression(this.result);
+                    const expr = new Expression(this.result);
                     const calculationResult = expr.calculateExpression();
                     const resultStr = `${calculationResult}`.replace(/\./g,',');;
                     this.result = resultStr;
